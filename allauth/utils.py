@@ -278,8 +278,18 @@ def build_absolute_uri(request, location, protocol=None):
             )
         else:
             uri = location
+    elif app_settings.SITES_ENABLED:
+            from django.contrib.sites.models import Site
+            site = Site.objects.get_current(request)
+            bits = urlsplit(location)
+            if not (bits.scheme and bits.netloc):
+                uri = "{proto}://{domain}{url}".format(
+                    proto=account_settings.DEFAULT_HTTP_PROTOCOL,
+                    domain=site.domain,
+                    url=location,
+                )
     else:
-        uri = request.build_absolute_uri(location)
+        uri = request.build_absolute_uri()
     # NOTE: We only force a protocol if we are instructed to do so
     # (via the `protocol` parameter, or, if the default is set to
     # HTTPS. The latter keeps compatibility with the debatable use
